@@ -1,0 +1,52 @@
+ES LO DE LAS NOTIFICACIONES TENER PENDIENTE VA ARRIBA DEL USUARIO EN EL MASTER.BLADE.PHP
+                   
+                   
+                    <!--
+                        @php
+                        $totalAlertas = ($expedientesVencidos->count() ?? 0) + ($expedientesPorVencer->count() ?? 0);
+                        @endphp
+
+                        <li class="nav-item dropdown no-arrow mx-1">
+                            <a class="nav-link dropdown-toggle" href="#" id="alertsDropdown" role="button"
+                                data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                <i class="fas fa-bell fa-fw"></i>
+                                @if($totalAlertas > 0)
+                                <span class="badge badge-danger badge-counter">{{ $totalAlertas }}</span>
+                                @endif
+                            </a>
+
+                            <div class="dropdown-list dropdown-menu dropdown-menu-right shadow animated--grow-in"
+                                aria-labelledby="alertsDropdown">
+
+                                {{-- Vencidos --}}
+                                <h6 class="dropdown-header">Expedientes Vencidos</h6>
+                                @forelse($expedientesVencidos as $expediente)
+                                <a class="dropdown-item d-flex align-items-center"
+                                    href="{{ url('/expedienteindividual?id=' . $expediente->id) }}">
+                                    <div>
+                                        <div class="small text-gray-500">Fecha cierre: {{ $expediente->fecha_cierre }}</div>
+                                        <span class="font-weight-bold text-danger">{{ $expediente->nombre }}</span>
+                                    </div>
+                                </a>
+                                @empty
+                                <a class="dropdown-item text-center small text-gray-500">No hay expedientes vencidos</a>
+                                @endforelse
+
+                                <div class="dropdown-divider"></div>
+
+                                {{-- Por vencer --}}
+                                <h6 class="dropdown-header">Expedientes por vencer</h6>
+                                @forelse($expedientesPorVencer as $expediente)
+                                <a class="dropdown-item d-flex align-items-center"
+                                    href="{{ url('/expedienteindividual?id=' . $expediente->id) }}">
+                                    <div>
+                                        <div class="small text-gray-500">Fecha cierre: {{ $expediente->fecha_cierre }}</div>
+                                        <span class="font-weight-bold text-warning">{{ $expediente->nombre }}</span>
+                                    </div>
+                                </a>
+                                @empty
+                                <a class="dropdown-item text-center small text-gray-500">No hay expedientes próximos a vencer</a>
+                                @endforelse
+                            </div>
+                        </li>
+    -->
