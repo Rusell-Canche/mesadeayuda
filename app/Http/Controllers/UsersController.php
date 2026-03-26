@@ -7,12 +7,17 @@ use Illuminate\Http\Request;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 
 class UsersController extends Controller
 {
 
 
-
+    private function generarPasswordTemporal(): string
+    {
+        // Genera una contraseña de 10 caracteres con letras, números y símbolos
+        return Str::password(10);
+    }
 
     public function store(Request $request)
     {
@@ -25,11 +30,12 @@ class UsersController extends Controller
             'escolaridad' => 'nullable|string|max:150',
             'sexo' => 'nullable|string|max:150', 
             'cargo' => 'required|string|max:255',
-            'password' => 'required|string|min:8',
             'roles' => 'array',
             'id_dependencia' => 'required|integer|exists:dependencias,id',
             'id_departamento' => 'required|integer|exists:departamentos,id',
         ]);
+        
+        $passwordTemporal = $this->generarPasswordTemporal();
 
         // Crea el usuario
         $user = User::create([
@@ -40,13 +46,18 @@ class UsersController extends Controller
             'cargo' => $request->cargo,
             'escolaridad' => $request->escolaridad,
             'sexo' => $request->sexo,
-            'password' => Hash::make($request->password),
+            'password' => Hash::make($passwordTemporal),
             'roles' => $request->roles,
             'id_dependencia' => $request->id_dependencia,
             'id_departamento' => $request->id_departamento,
+            'password_temporal'  => true,
         ]);
 
-        return response()->json(['message' => '¡Usuario creado exitosamente!']);
+        // Se regresa la contraseña en texto plano para que el admin se la comparta al usuario
+        return response()->json([
+            'message' => '¡Usuario creado exitosamente!',
+            'password_temporal' => $passwordTemporal
+        ]);
     }
 
 

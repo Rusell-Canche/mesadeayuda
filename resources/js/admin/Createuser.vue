@@ -32,17 +32,6 @@
         </div>
         <div class="row mb-3">
           <div class="col-sm-6">
-            <label for="password" class="form-label">Contraseña:</label>
-            <input v-model="password" type="password" id="password" name="password" class="form-control" required>
-          </div>
-          <div class="col-sm-6">
-            <label for="confirm_password" class="form-label">Confirmar Contraseña:</label>
-            <input v-model="confirm_password" type="password" id="confirm_password" name="confirm_password"
-              class="form-control" required>
-          </div>
-
-
-          <div class="col-sm-6">
             <label for="escolaridad" class="form-label">Escolaridad:</label>
             <select v-model="escolaridad" id="escolaridad" name="escolaridad" class="form-control" required>
               <option value="">Seleccione una opción</option>
@@ -151,8 +140,6 @@ export default {
       apellido_materno: '',
       apellido_paterno: '',
       email: '',
-      password: '',
-      confirm_password: '',
       roles: [],
       id_dependencia: '',
       id_departamento: '',    // seleccionado en el select
@@ -248,8 +235,6 @@ export default {
       this.apellido_materno = '';
       this.apellido_paterno = '';
       this.email = '';
-      this.password = '';
-      this.confirm_password = '';
       this.cargo = '';
       this.escolaridad = '';
       this.sexo = '';
@@ -267,8 +252,6 @@ export default {
         !this.apellido_materno ||
         !this.apellido_paterno ||
         !this.email ||
-        !this.password ||
-        !this.confirm_password ||
         !this.cargo ||
         !this.escolaridad ||
         !this.sexo ||
@@ -282,17 +265,6 @@ export default {
         });
         return;
       }
-
-      // Verificación de coincidencia de contraseñas
-      if (this.password !== this.confirm_password) {
-        Swal.fire({
-          icon: 'error',
-          title: '¡Error!',
-          text: 'Las contraseñas no coinciden',
-        });
-        return;
-      }
-
       // Confirmación de creación del usuario
       const result = await Swal.fire({
         title: '¿Estás seguro?',
@@ -310,14 +282,13 @@ export default {
           apellido_materno: this.apellido_materno,
           apellido_paterno: this.apellido_paterno,
           email: this.email,
-          password: this.password,
-          confirm_password: this.confirm_password,
           roles: [...this.roles],
           id_dependencia: this.id_dependencia,
           id_departamento: this.id_departamento,
           cargo: this.cargo,
           escolaridad: this.escolaridad,
           sexo: this.sexo,
+          password_temporal: true,
 
 
         };
@@ -329,7 +300,25 @@ export default {
           Swal.fire({
             icon: 'success',
             title: '¡Usuario creado!',
-            text: response.data.message,
+            html: `
+                <p>${response.data.message}</p>
+                <p>Comparte esta contraseña temporal con el usuario:</p>
+                <div style="
+                  background: #f3f4f6; 
+                  padding: 10px; 
+                  border-radius: 8px; 
+                  font-size: 1.4rem; 
+                  font-weight: bold; 
+                  letter-spacing: 2px;
+                  margin-top: 8px;
+                ">
+                  ${response.data.password_temporal}
+                </div>
+                <p style="font-size:0.8rem; color:#888; margin-top:8px;">
+                  El usuario deberá cambiarla al iniciar sesión.
+                </p>
+              `,
+              confirmButtonText: 'Entendido',
           }).then(() => {
             this.resetForm();
           });

@@ -21,6 +21,7 @@ class User extends Authenticatable
         'id_dependencia',
         'id_departamento',
         'roles',
+        'password_temporal',
     ];
 
     protected $casts = [
