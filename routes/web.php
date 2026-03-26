@@ -168,6 +168,13 @@ Route::get('/expedienteindividual', function () {
 Route::delete('/bajaexpediente/{id}', [ExpedienteController::class, 'darDeBaja'])
     ->name('expediente.baja')
     ->middleware('auth');
+
+// ── NUEVO: rutas de contraseña temporal ─────────────────────────────────────
+Route::middleware('auth')->group(function () {
+    Route::get('/password/change', [UsersController::class, 'showChangePassword'])->name('password.change');
+    Route::post('/password/update', [UsersController::class, 'updatePassword'])->name('password.update');
+});
+   
 Route::get('/expedienteid/{id}', [ExpedienteController::class, 'getExpedienteById']);
 
 Route::put('/cambiarEstado/{id}', [ExpedienteController::class, 'cambiarEstado']);

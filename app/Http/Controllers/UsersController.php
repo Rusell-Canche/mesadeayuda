@@ -62,12 +62,36 @@ class UsersController extends Controller
         if (Auth::attempt($credentials)) {
             $request->session()->regenerate();
 
-            return redirect()->intended('/dashboard');
+                if (Auth::user()->password_temporal) {
+                    return redirect()->route('password.change');
+                }
+
+                return redirect()->intended('/dashboard');
         }
 
         return back()->withErrors([
             'email' => 'Las credenciales proporcionadas no coinciden con nuestros registros.',
         ])->onlyInput('email');
+    }
+
+    public function showChangePassword()
+    {
+        return view('auth.change-password');
+    }
+
+    public function updatePassword(Request $request)
+    {
+        $request->validate([
+            'password' => 'required|string|min:8|confirmed',
+        ]);
+
+        $user = Auth::user();
+        $user->password = Hash::make($request->password);
+        $user->password_temporal = false;
+        $user->save();
+
+        return redirect()->intended('/dashboard')
+            ->with('success', 'Contraseña actualizada exitosamente.');
     }
 
     public function logout(Request $request)
