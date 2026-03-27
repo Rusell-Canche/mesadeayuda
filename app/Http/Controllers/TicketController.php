@@ -103,4 +103,41 @@ class TicketController extends Controller
             'oficio_atendido' => $ticket->oficio_atendido
         ]);
     }
+
+    public function destroy($id)
+    {
+        $ticket = Ticket::findOrFail($id);
+
+        // (opcional) solo permitir eliminar si está atendido
+        if ($ticket->estado !== 'Atendido') {
+            return response()->json([
+                'error' => 'Solo se pueden eliminar tickets atendidos'
+            ], 400);
+        }
+
+        $ticket->delete(); // Esto hará un soft delete gracias a SoftDeletes en el modelo
+
+        return response()->json([
+            'message' => 'Ticket enviado a papelera'
+        ]);
+    }
+
+    public function eliminados()
+    {
+        $tickets = Ticket::onlyTrashed()
+            ->with(['prioridad', 'categoria', 'user'])
+            ->get();
+
+        return response()->json($tickets);
+    }
+
+    public function restore($id)
+    {
+        $ticket = Ticket::withTrashed()->findOrFail($id);
+        $ticket->restore();
+
+        return response()->json([
+            'message' => 'Ticket restaurado'
+        ]);
+    }
 }

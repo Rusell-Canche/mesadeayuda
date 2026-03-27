@@ -115,6 +115,12 @@ Route::get('/indexfondos', function () {
 Route::post('/nuevoticket', [TicketController::class, 'store']);
 Route::get('/obtenertickets', [TicketController::class, 'index']);
 Route::put('/ticketatendido/{id}', [TicketController::class, 'marcarComoAtendido']);
+// Eliminar (soft delete)
+Route::delete('/eliminarticket/{id}', [TicketController::class, 'destroy']);
+// Ver eliminados
+Route::get('/tickets-eliminados', [TicketController::class, 'eliminados']);
+// Restaurar
+Route::put('/restaurarticket/{id}', [TicketController::class, 'restore']);
 
 //PRIORIDAD
 Route::get('/obtenerprioridades', [PrioridadController::class, 'index']);

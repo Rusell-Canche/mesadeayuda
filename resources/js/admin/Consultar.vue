@@ -37,6 +37,9 @@
           style="background-color: #0d6efd; color: white; border-color: #0d6efd;">
           Mostrar todo
         </button>
+        <button class="btn btn-warning ms-2" @click="verEliminados">
+          Ver eliminados
+        </button>
       </div>
 
       <table
@@ -119,10 +122,29 @@
             </td>
 
             <td>
-              <button @click="abrirModal(ticket)" :disabled="ticket.estado === 'Atendido'"
+              <!-- MODO NORMAL -->
+              <template v-if="!modoEliminados">
+
+                <button @click="abrirModal(ticket)" :disabled="ticket.estado === 'Atendido'"
                 :class="['btn', ticket.estado === 'Atendido' ? 'btn-secondary' : 'btn-success', 'btn-sm']">
                 <i class="fas fa-check"></i>
               </button>
+
+                <button @click="eliminarTicket(ticket.id)" :disabled="ticket.estado !== 'Atendido'"
+                  class="btn btn-danger btn-sm ms-1">
+                  <i class="fas fa-trash"></i>
+                </button>
+
+              </template>
+
+              <!-- MODO ELIMINADOS -->
+              <template v-else>
+
+                <button @click="restaurarTicket(ticket.id)" class="btn btn-info btn-sm">
+                  <i class="fas fa-undo"></i>
+                </button>
+
+              </template>
             </td>
 
           </tr>
@@ -224,6 +246,7 @@ export default {
       try {
         const response = await axios.get("/obtenertickets");
         this.tickets = response.data;
+        this.modoEliminados = false;
       } catch (error) {
         console.error("Error al cargar tickets:", error);
       }
@@ -323,6 +346,41 @@ export default {
           caption: tipo === 'archivo' ? ticket.asunto || 'Archivo adjunto' : 'Oficio atendido',
         }
       ]);
+    },
+
+    async eliminarTicket(id) {
+      if (!confirm('¿Enviar este ticket a la papelera?')) return;
+
+      try {
+        await axios.delete(`/eliminarticket/${id}`);
+
+        // quitar de la vista
+        this.tickets = this.tickets.filter(t => t.id !== id);
+
+        alert('Ticket enviado a papelera');
+      } catch (error) {
+        console.error(error);
+        alert('Error al eliminar');
+      }
+    },
+
+    async verEliminados() {
+      try {
+        const res = await axios.get('/tickets-eliminados');
+        this.tickets = res.data;
+        this.modoEliminados = true;
+      } catch (error) {
+        console.error(error);
+      }
+    },
+
+    async restaurarTicket(id) {
+      try {
+        await axios.put(`/restaurarticket/${id}`);
+        this.fetchTickets();
+      } catch (error) {
+        console.error(error);
+      }
     }
   }
 };
