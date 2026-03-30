@@ -125,10 +125,16 @@
               <!-- MODO NORMAL -->
               <template v-if="!modoEliminados">
 
+                <button @click="abrirModalEditar(ticket)" :disabled="ticket.estado === 'Atendido'"
+                  :class="['btn', ticket.estado === 'Atendido' ? 'btn-secondary' : 'btn-warning', 'btn-sm', 'me-1']"
+                  title="Editar ticket">
+                  <i class="fas fa-edit"></i>
+                </button>
+
                 <button @click="abrirModal(ticket)" :disabled="ticket.estado === 'Atendido'"
-                :class="['btn', ticket.estado === 'Atendido' ? 'btn-secondary' : 'btn-success', 'btn-sm']">
-                <i class="fas fa-check"></i>
-              </button>
+                  :class="['btn', ticket.estado === 'Atendido' ? 'btn-secondary' : 'btn-success', 'btn-sm']">
+                  <i class="fas fa-check"></i>
+                </button>
 
                 <button @click="eliminarTicket(ticket.id)" :disabled="ticket.estado !== 'Atendido'"
                   class="btn btn-danger btn-sm ms-1">
@@ -187,6 +193,79 @@
         </div>
       </div>
 
+      <!-- Modal Editar Ticket -->
+      <div v-if="modalEditarVisible" class="modal fade show d-block" tabindex="-1"
+        style="background-color: rgba(0,0,0,0.5);" @click.self="cerrarModalEditar">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title">Editar Ticket #{{ ticketEditando?.id }}</h5>
+              <button type="button" class="btn-close" @click="cerrarModalEditar"></button>
+            </div>
+            <div class="modal-body">
+
+              <!-- Asunto -->
+              <div class="mb-3">
+                <label class="form-label fw-bold">Asunto: *</label>
+                <input type="text" v-model="formEditar.asunto" class="form-control"
+                  placeholder="Escribe el asunto del ticket">
+              </div>
+
+              <div class="row">
+                <!-- Prioridad -->
+                <div class="col-md-6 mb-3">
+                  <label class="form-label fw-bold">Prioridad: *</label>
+                  <select v-model="formEditar.prioridad_id" class="form-select">
+                    <option disabled value="">Seleccione una prioridad</option>
+                    <option v-for="p in prioridades" :key="p.id" :value="p.id">
+                      {{ p.nombre }}
+                    </option>
+                  </select>
+                </div>
+
+                <!-- Categoría -->
+                <div class="col-md-6 mb-3">
+                  <label class="form-label fw-bold">Categoría: *</label>
+                  <select v-model="formEditar.categoria_id" class="form-select">
+                    <option disabled value="">Seleccione una categoría</option>
+                    <option v-for="c in categorias" :key="c.id" :value="c.id">
+                      {{ c.nombre }}
+                    </option>
+                  </select>
+                </div>
+              </div>
+
+              <!-- Archivo adjunto -->
+              <div class="mb-3">
+                <label class="form-label fw-bold">Reemplazar archivo adjunto:</label>
+                <input type="file" @change="handleFileEditarUpload" class="form-control">
+                <small class="text-muted">
+                  Formatos permitidos: PDF, DOC, DOCX, JPG, JPEG, PNG.
+                  <span v-if="ticketEditando?.archivo_path" class="text-info ms-2">
+                    <i class="fas fa-paperclip"></i> Ya tiene un archivo adjunto (déjalo vacío para conservarlo).
+                  </span>
+                </small>
+              </div>
+
+              <!-- Descripción (textarea simple, sin Summernote para evitar conflictos) -->
+              <div class="mb-3">
+                <label class="form-label fw-bold">Descripción: *</label>
+                <textarea v-model="formEditar.contenido" class="form-control" rows="5"
+                  placeholder="Describe el ticket..."></textarea>
+              </div>
+
+            </div>
+            <div class="modal-footer">
+              <button class="btn btn-secondary" @click="cerrarModalEditar">Cancelar</button>
+              <button class="btn btn-primary" @click="guardarEdicion"
+                :disabled="!formEditar.asunto || !formEditar.prioridad_id || !formEditar.categoria_id || !formEditar.contenido">
+                <i class="fas fa-save me-1"></i> Guardar cambios
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
 
     </div>
   </div>
@@ -210,6 +289,15 @@ export default {
       ticketSeleccionado: null,
       quienAtendio: '',
       solucion: '',
+      modalEditarVisible: false,
+      ticketEditando: null,
+      formEditar: {
+        asunto: '',
+        prioridad_id: '',
+        categoria_id: '',
+        contenido: '',
+        archivo: null,
+      },
     };
   },
   mounted() {
@@ -381,7 +469,70 @@ export default {
       } catch (error) {
         console.error(error);
       }
-    }
+    },
+
+    abrirModalEditar(ticket) {
+      this.ticketEditando = ticket;
+      this.formEditar = {
+        asunto: ticket.asunto,
+        prioridad_id: ticket.prioridad?.id || '',
+        categoria_id: ticket.categoria?.id || '',
+        // Limpia etiquetas HTML de Summernote para el textarea plano
+        contenido: ticket.contenido
+          ? ticket.contenido.replace(/<[^>]*>/g, '')
+          : '',
+        archivo: null,
+      };
+      this.modalEditarVisible = true;
+    },
+
+    cerrarModalEditar() {
+      this.modalEditarVisible = false;
+      this.ticketEditando = null;
+      this.formEditar = { asunto: '', prioridad_id: '', categoria_id: '', contenido: '', archivo: null };
+    },
+
+    handleFileEditarUpload(event) {
+      this.formEditar.archivo = event.target.files[0] || null;
+    },
+
+    async guardarEdicion() {
+      if (!this.formEditar.asunto || !this.formEditar.prioridad_id ||
+        !this.formEditar.categoria_id || !this.formEditar.contenido) {
+        alert('Por favor completa todos los campos requeridos.');
+        return;
+      }
+
+      const formData = new FormData();
+      formData.append('asunto', this.formEditar.asunto);
+      formData.append('prioridad_id', this.formEditar.prioridad_id);
+      formData.append('categoria_id', this.formEditar.categoria_id);
+      formData.append('contenido', this.formEditar.contenido);
+      if (this.formEditar.archivo) {
+        formData.append('archivo', this.formEditar.archivo);
+      }
+
+      try {
+        const response = await axios.post(
+          `/editarticket/${this.ticketEditando.id}`,
+          formData,
+          { headers: { 'Content-Type': 'multipart/form-data' } }
+        );
+
+        // Refleja los cambios en la tabla sin recargar
+        const idx = this.tickets.findIndex(t => t.id === this.ticketEditando.id);
+        if (idx !== -1) {
+          this.tickets[idx] = { ...this.tickets[idx], ...response.data };
+        }
+
+        alert('Ticket actualizado correctamente.');
+        this.cerrarModalEditar();
+        this.fetchTickets(); // refresca para obtener relaciones actualizadas
+      } catch (error) {
+        console.error('Error al editar ticket:', error);
+        alert('Hubo un error al guardar los cambios.');
+      }
+    },
   }
 };
 </script>

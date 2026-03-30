@@ -140,4 +140,28 @@ class TicketController extends Controller
             'message' => 'Ticket restaurado'
         ]);
     }
+
+    public function editar(Request $request, $id)
+    {
+        $ticket = Ticket::findOrFail($id);
+
+        $ticket->asunto       = $request->asunto;
+        $ticket->prioridad_id = $request->prioridad_id;
+        $ticket->categoria_id = $request->categoria_id;
+        $ticket->contenido    = $request->contenido;
+
+        if ($request->hasFile('archivo')) {
+            // Elimina el anterior si existe
+            if ($ticket->archivo_path) {
+                Storage::disk('public')->delete($ticket->archivo_path);
+            }
+            $ticket->archivo_path = $request->file('archivo')
+                ->store('tickets', 'public');
+        }
+
+        $ticket->save();
+
+        // Retorna con relaciones para actualizar la tabla
+        return response()->json($ticket->load('prioridad', 'categoria'));
+    }
 }

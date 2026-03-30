@@ -121,6 +121,8 @@ Route::delete('/eliminarticket/{id}', [TicketController::class, 'destroy']);
 Route::get('/tickets-eliminados', [TicketController::class, 'eliminados']);
 // Restaurar
 Route::put('/restaurarticket/{id}', [TicketController::class, 'restore']);
+// Editar ticket
+Route::post('/editarticket/{id}', [TicketController::class, 'editar']);
 
 //PRIORIDAD
 Route::get('/obtenerprioridades', [PrioridadController::class, 'index']);
