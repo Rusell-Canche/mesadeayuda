@@ -172,10 +172,10 @@
                 <label for="quienAtendio" class="form-label">¿Quién atendió?</label>
                 <select id="quienAtendio" v-model="quienAtendio" class="form-select">
                   <option disabled value="">Seleccione una opción</option>
-                  <option value="Ing. Jhoedy Indurain Domínguez Domínguez">Ing. Jhoedy Indurain Domínguez Domínguez
+                  <option v-for="u in usuariosTIC" :key="u.id"
+                    :value="`${u.nombre} ${u.apellido_paterno} ${u.apellido_materno}`">
+                    {{ u.nombre }} {{ u.apellido_paterno }} {{ u.apellido_materno }}
                   </option>
-                  <option value="Mtro. José Alberto Díaz López">Mtro. José Alberto Díaz López</option>
-                  <option value="Ing. Rusell Emmanuel Canche Ciau">Ing. Rusell Emmanuel Canche Ciau</option>
                 </select>
               </div>
 
@@ -282,6 +282,7 @@ export default {
       tickets: [],
       categorias: [],
       prioridades: [],
+      usuariosTIC: [],
       filtroCategoria: '',
       filtroEstado: '',
       filtroPrioridad: '',
@@ -304,6 +305,7 @@ export default {
     this.fetchTickets();
     this.fetchCategorias();
     this.fetchPrioridades();
+    this.fetchUsuariosTIC();
   },
   computed: {
     ticketsFiltrados() {
@@ -317,6 +319,14 @@ export default {
     },
   },
   methods: {
+    async fetchUsuariosTIC() {
+      try {
+        const response = await axios.get('/usuarios-tic');
+        this.usuariosTIC = response.data;
+      } catch (error) {
+        console.error('Error al cargar usuarios TIC:', error);
+      }
+    },
     abrirModal(ticket) {
       this.ticketSeleccionado = ticket;
       this.quienAtendio = '';
@@ -332,7 +342,7 @@ export default {
 
     async fetchTickets() {
       try {
-        const response = await axios.get("/obtenertickets");
+        const response = await axios.get("/mis-tickets");
         this.tickets = response.data;
         this.modoEliminados = false;
       } catch (error) {

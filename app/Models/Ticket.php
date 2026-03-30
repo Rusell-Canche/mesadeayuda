@@ -22,6 +22,7 @@ class Ticket extends Model
         'archivo_path',
         'estado',
         'user_id',
+        'asignado_a'
     ];
 
     // Si tienes relación con usuarios:
@@ -30,7 +31,7 @@ class Ticket extends Model
         return $this->belongsTo(User::class);
     }
 
-     public function prioridad()
+    public function prioridad()
     {
         return $this->belongsTo(Prioridad::class);
     }
@@ -39,5 +40,9 @@ class Ticket extends Model
     {
         return $this->belongsTo(Categoria::class);
     }
-    
+
+    public function asignadoA()
+    {
+        return $this->belongsTo(User::class, 'asignado_a');
+    }
 }

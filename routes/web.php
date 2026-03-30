@@ -123,6 +123,10 @@ Route::get('/tickets-eliminados', [TicketController::class, 'eliminados']);
 Route::put('/restaurarticket/{id}', [TicketController::class, 'restore']);
 // Editar ticket
 Route::post('/editarticket/{id}', [TicketController::class, 'editar']);
+// Obtener usuarios TIC
+Route::get('/usuarios-tic', [TicketController::class, 'usuariosTIC']);
+// Tickets donde el usuario logueado es el asignado
+Route::get('/mis-tickets', [TicketController::class, 'misTickets']);
 
 //PRIORIDAD
 Route::get('/obtenerprioridades', [PrioridadController::class, 'index']);

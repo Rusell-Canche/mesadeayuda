@@ -69,6 +69,17 @@
                         <input type="file" id="archivo" @change="handleFileUpload" class="form-control">
                         <small class="text-muted">Formatos permitidos: PDF, DOC, DOCX, JPG, JPEG, PNG.</small>
                     </div>
+
+                    <!-- Asignar a -->
+                    <div class="form-group col-md-6 mb-3">
+                        <label for="asignado">Asignar a: *</label>
+                        <select id="asignado" v-model="form.asignado_a" class="form-select">
+                            <option disabled value="">Seleccione un responsable</option>
+                            <option v-for="u in usuariosTIC" :key="u.id" :value="u.id">
+                                {{ u.nombre }} {{ u.apellido_paterno }} {{ u.apellido_materno }}
+                            </option>
+                        </select>
+                    </div>
                 </div>
 
                 <!-- Editor Summernote (solo) -->
@@ -110,16 +121,29 @@ export default {
                 categoria_id: '',
                 unidad_administrativa: '',
                 contenido: '',
+                asignado_a: '',
             },
             prioridades: [],
             categorias: [],
+            usuariosTIC: [],
         };
     },
     created() {
         this.obtenerPrioridades();
         this.obtenerCategorias();
+        this.obtenerUsuariosTIC();
     },
     methods: {
+
+        async obtenerUsuariosTIC() {
+            try {
+                const response = await axios.get('/usuarios-tic');
+                this.usuariosTIC = response.data;
+            } catch (error) {
+                console.error('Error al cargar usuarios TIC:', error);
+            }
+        },
+
         handleFileUpload(event) {
             const file = event.target.files[0];
             this.form.archivo = file;
@@ -154,6 +178,7 @@ export default {
             formData.append('categoria_id', this.form.categoria_id);
             formData.append('unidad_administrativa', this.form.unidad_administrativa);
             formData.append('contenido', this.form.contenido);
+            formData.append('asignado_a', this.form.asignado_a);
             if (this.form.archivo) {
                 formData.append('archivo', this.form.archivo);
             }
@@ -182,6 +207,7 @@ export default {
                 unidad_administrativa: this.form.unidad_administrativa,
                 categoria_id: '',
                 contenido: '',
+                asignado_a: '',
             };
             $(this.$refs.summernoteEditor).summernote('reset');
         },

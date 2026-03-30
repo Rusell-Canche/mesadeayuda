@@ -29,6 +29,7 @@ class TicketController extends Controller
             'categoria_id' => 'required|integer|exists:categorias,id',
             'contenido' => 'nullable|string',
             'archivo' => 'nullable|file|mimes:pdf,doc,docx,jpg,jpeg,png|max:5120', // 5MB
+            'asignado_a' => 'nullable|integer|exists:users,id',
         ]);
 
         try {
@@ -61,7 +62,7 @@ class TicketController extends Controller
 
     public function index()
     {
-        $tickets = Ticket::with(['prioridad', 'categoria', 'user'])->get();
+        $tickets = Ticket::with(['prioridad', 'categoria', 'user', 'asignadoA'])->get();
         return response()->json($tickets);
     }
 
@@ -163,5 +164,29 @@ class TicketController extends Controller
 
         // Retorna con relaciones para actualizar la tabla
         return response()->json($ticket->load('prioridad', 'categoria'));
+    }
+
+    public function usuariosTIC()
+    {
+        $usuarios = \App\Models\User::whereHas('departamento', function ($q) {
+            $q->where('nombre', 'DEPARTAMENTO DE TECNOLOGÍAS DE LA INFORMACIÓN Y COMUNICACIONES');
+        })
+            ->where(function ($q) {
+                // roles es un campo JSON, usamos operador JSON de MySQL
+                $q->whereJsonContains('roles', 'administrador')
+                    ->orWhereJsonContains('roles', 'root');
+            })
+            ->get(['id', 'nombre', 'apellido_paterno', 'apellido_materno']);
+
+        return response()->json($usuarios);
+    }
+
+    public function misTickets()
+    {
+        $tickets = Ticket::with(['prioridad', 'categoria', 'user', 'asignadoA'])
+            ->where('asignado_a', Auth::id())
+            ->get();
+
+        return response()->json($tickets);
     }
 }
