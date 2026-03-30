@@ -273,6 +273,7 @@
 
 <script>
 import axios from "axios";
+import Swal from 'sweetalert2';
 import '@fancyapps/ui/dist/fancybox/fancybox.css';
 import { Fancybox } from '@fancyapps/ui';
 
@@ -389,12 +390,12 @@ export default {
 
     async confirmarAtendido() {
       if (!this.quienAtendio) {
-        alert('Por favor, seleccione quién atendió');
+        Swal.fire({ icon: 'warning', title: 'Campo requerido', text: 'Por favor, seleccione quién atendió' });
         return;
       }
 
       if (!this.solucion) {
-        alert('Por favor, ingrese la solución u observaciones');
+        Swal.fire({ icon: 'warning', title: 'Campo requerido', text: 'Por favor, ingrese la solución u observaciones' });
         return;
       }
 
@@ -414,12 +415,12 @@ export default {
           ticket.oficio_atendido = response.data.oficio_atendido || null;
         }
 
-        alert('Ticket marcado como atendido correctamente');
+        Swal.fire({ icon: 'success', title: '¡Listo!', text: 'Ticket marcado como atendido correctamente' });
         this.cerrarModal();
 
       } catch (error) {
         console.error('Error al marcar como atendido:', error);
-        alert('Hubo un error al actualizar el estado');
+        Swal.fire({ icon: 'error', title: 'Error', text: 'Hubo un error al actualizar el estado' });
       }
     },
 
@@ -447,18 +448,39 @@ export default {
     },
 
     async eliminarTicket(id) {
-      if (!confirm('¿Enviar este ticket a la papelera?')) return;
+      const result = await Swal.fire({
+        title: '¿Enviar a la papelera?',
+        text: 'El ticket será enviado a la papelera.',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#6c757d',
+        confirmButtonText: 'Sí, eliminar',
+        cancelButtonText: 'Cancelar'
+      });
+
+      if (!result.isConfirmed) return;
 
       try {
         await axios.delete(`/eliminarticket/${id}`);
 
-        // quitar de la vista
         this.tickets = this.tickets.filter(t => t.id !== id);
 
-        alert('Ticket enviado a papelera');
+        Swal.fire({
+          icon: 'success',
+          title: '¡Enviado!',
+          text: 'Ticket enviado a la papelera.',
+          confirmButtonColor: '#0d6efd'
+        });
+
       } catch (error) {
         console.error(error);
-        alert('Error al eliminar');
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: 'No se pudo eliminar el ticket. Intenta nuevamente.',
+          confirmButtonColor: '#d33'
+        });
       }
     },
 
@@ -509,7 +531,7 @@ export default {
     async guardarEdicion() {
       if (!this.formEditar.asunto || !this.formEditar.prioridad_id ||
         !this.formEditar.categoria_id || !this.formEditar.contenido) {
-        alert('Por favor completa todos los campos requeridos.');
+        Swal.fire({ icon: 'warning', title: 'Campos incompletos', text: 'Por favor completa todos los campos requeridos.' });
         return;
       }
 
@@ -535,12 +557,12 @@ export default {
           this.tickets[idx] = { ...this.tickets[idx], ...response.data };
         }
 
-        alert('Ticket actualizado correctamente.');
+        Swal.fire({ icon: 'success', title: '¡Actualizado!', text: 'Ticket actualizado correctamente.' });
         this.cerrarModalEditar();
         this.fetchTickets(); // refresca para obtener relaciones actualizadas
       } catch (error) {
         console.error('Error al editar ticket:', error);
-        alert('Hubo un error al guardar los cambios.');
+        Swal.fire({ icon: 'error', title: 'Error', text: 'Hubo un error al guardar los cambios.' });
       }
     },
   }

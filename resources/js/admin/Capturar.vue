@@ -103,6 +103,7 @@
 </template>
 
 <script>
+import Swal from 'sweetalert2';
 import { onMounted } from 'vue'
 import $ from 'jquery'
 window.$ = $;
@@ -189,12 +190,24 @@ export default {
                 headers: { 'Content-Type': 'multipart/form-data' }
             })
                 .then(() => {
-                    alert('Ticket creado con éxito');
+                    Swal.fire({
+                        icon: 'success',
+                        title: '¡Ticket creado!',
+                        text: 'Tu ticket ha sido creado exitosamente.',
+                        confirmButtonText: 'Aceptar',
+                        confirmButtonColor: '#0d6efd'
+                    });
                     this.resetForm();
                 })
                 .catch(error => {
                     console.error('Error al crear ticket:', error);
-                    alert('Hubo un error al crear el ticket. Intenta nuevamente.');
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: 'Hubo un problema al crear el ticket. Por favor, intenta nuevamente.',
+                        confirmButtonText: 'Aceptar',
+                        confirmButtonColor: '#0d6efd'
+                    });
                 });
         },
 
